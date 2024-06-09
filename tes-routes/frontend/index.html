@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Prediction Form</title>
+</head>
+<body>
+    <h1>Booking Prediction Form</h1>
+    <form id="predictForm">
+        <div id="inputFields"></div>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        const inputFields = [
+            'booking_status', 'booking_guest_number', 'booking_currency', 'listing_id', 
+            'review_sentiment', 'review_sentiment_score', 'booking_earned_in_idr', 'length_of_stay', 
+            'seasonality', 'average_daily_rate', 'unit_id', 'bedroom', 'bathroom', 'beds', 'capacity', 
+            'property_id', 'avg_daily_rate_per_unit', 'wifi', 'tv', 'cable_tv', 'ac', 'workspace', 'pool', 
+            'parking', 'gym', 'kitchen', 'property_id1', 'area_id', 'area_name', 'area_distance_to_airport', 
+            'airport_pickup_price_idr', 'booking_check_in_date', 'booking_check_in_month', 'booking_check_in_year', 
+            'booking_check_out_date', 'booking_check_out_month', 'booking_check_out_year'
+        ];
+
+        const inputFieldsContainer = document.getElementById('inputFields');
+
+        inputFields.forEach(field => {
+            const label = document.createElement('label');
+            label.htmlFor = field;
+            label.textContent = field.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()) + ':';
+            inputFieldsContainer.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = field;
+            input.name = field;
+            input.required = true;
+            inputFieldsContainer.appendChild(input);
+
+            inputFieldsContainer.appendChild(document.createElement('br'));
+            inputFieldsContainer.appendChild(document.createElement('br'));
+        });
+
+        document.getElementById('predictForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const data = {};
+            inputFields.forEach(field => {
+                data[field] = document.getElementById(field).value;
+            });
+
+            try {
+                const response = await fetch('http://localhost:3000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const resultDiv = document.getElementById('result');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.textContent = `Predicted Booking in IDR: ${result.data.booking_in_idr}`;
+                } else {
+                    resultDiv.textContent = `Error: ${response.statusText}`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = `Error: ${error}`;
+            }
+        });
+    </script>
+</body>
+</html>
